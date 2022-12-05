@@ -8,9 +8,10 @@ class DiaryService extends BaseDiaryService {
   final BaseDiaryDatasource diaryDatasource;
 
   @override
-  Future<List<DiaryData>> getDiaryList() async {
+  Future<List<DiaryData>> getDiaryList({List<int>? ids}) async {
     try {
-      final List<DiaryData> canvasList = await diaryDatasource.fetchDiaryList();
+      final List<DiaryData> canvasList =
+          await diaryDatasource.fetchDiaryList(ids: ids);
       return canvasList;
     } on Exception {
       rethrow;
@@ -27,7 +28,7 @@ class DiaryService extends BaseDiaryService {
   }
 
   @override
-  Future<bool> editDiary(DiaryCompanion diaryCompanion) async{
+  Future<bool> editDiary(DiaryCompanion diaryCompanion) async {
     try {
       return await diaryDatasource.updateDiary(diaryCompanion);
     } on Exception {
@@ -36,7 +37,7 @@ class DiaryService extends BaseDiaryService {
   }
 
   @override
-  Future<List<DiaryData>> searchDiary(String queryString) async{
+  Future<List<DiaryData>> searchDiary(String queryString) async {
     try {
       return await diaryDatasource.queryDiaries(queryString);
     } on Exception {
@@ -45,7 +46,7 @@ class DiaryService extends BaseDiaryService {
   }
 
   @override
-  Future<int> removeDiary(DiaryData item) async{
+  Future<int> removeDiary(DiaryData item) async {
     try {
       return await diaryDatasource.deleteDiary(item);
     } on Exception {

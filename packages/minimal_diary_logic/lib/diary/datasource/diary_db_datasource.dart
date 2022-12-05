@@ -3,8 +3,9 @@ import 'package:minimal_diary_logic/diary/datasource/base_diary_datasource.dart'
 
 class DiaryDbDataSource extends BaseDiaryDatasource {
   @override
-  Future<List<DiaryData>> fetchDiaryList() =>
-      MyDatabase.instance.fetchCanvasList;
+  Future<List<DiaryData>> fetchDiaryList({List<int>? ids}) => ids == null
+      ? MyDatabase.instance.fetchCanvasList
+      : MyDatabase.instance.getDiaryListById(ids);
 
   @override
   Future<void> storeDiary(DiaryCompanion diaryCompanion) async {
@@ -12,17 +13,17 @@ class DiaryDbDataSource extends BaseDiaryDatasource {
   }
 
   @override
-  Future<bool> updateDiary(DiaryCompanion diaryCompanion) async{
+  Future<bool> updateDiary(DiaryCompanion diaryCompanion) async {
     return await MyDatabase.instance.updateDiary(diaryCompanion);
   }
 
   @override
-  Future<List<DiaryData>> queryDiaries(String queryString) async{
+  Future<List<DiaryData>> queryDiaries(String queryString) async {
     return await MyDatabase.instance.searchQuery(queryString);
   }
 
   @override
-  Future<int> deleteDiary(DiaryData diaryData) async{
+  Future<int> deleteDiary(DiaryData diaryData) async {
     // TODO: implement deleteDiary
     return await MyDatabase.instance.deleteDiary(diaryData);
   }

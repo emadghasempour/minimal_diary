@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:flutter_deriv_theme/src/colors.dart';
-import 'package:flutter_deriv_theme/text_styles.dart';
+import 'package:theme_provider/src/colors.dart';
+import 'package:theme_provider/text_styles.dart';
 
 class ThemeProviderTest {
   factory ThemeProviderTest() => _instance;

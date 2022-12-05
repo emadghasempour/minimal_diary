@@ -32,4 +32,9 @@ class DiaryController extends GetxController with StateMixin<List<DiaryData>>{
      await diaryService.removeDiary(diaryData);
      diaries.value = await diaryService.getDiaryList();
   }
+
+  Future<List<DiaryData>> getDiaryListById(List<int> ids) async {
+    return diaryService.getDiaryList(ids: ids);
+
+  }
 }

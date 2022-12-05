@@ -29,9 +29,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.lime,
-        scaffoldBackgroundColor: Colors.white
-      ),
+          primarySwatch: Colors.lime, scaffoldBackgroundColor: Colors.white),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         S.delegate,
         GlobalMaterialLocalizations.delegate,

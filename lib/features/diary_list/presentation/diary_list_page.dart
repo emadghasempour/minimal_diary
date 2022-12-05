@@ -7,8 +7,10 @@ import 'package:minimal_diary/features/diary_list/presentation/widgets/diary_lis
 import 'package:minimal_diary/features/diary_list/presentation/widgets/main_search_delegate.dart';
 import 'package:minimal_diary_logic/database/model/diary/diary_model.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 import 'package:theme_provider/text_styles.dart';
 import 'package:theme_provider/theme_provider.dart';
+import 'package:drift/drift.dart' as drift;
 
 class DiaryListPage extends StatefulWidget {
   const DiaryListPage({Key? key}) : super(key: key);
@@ -25,6 +27,16 @@ class _DiaryListPageState extends State<DiaryListPage> {
     super.initState();
     _diaryController = Get.find<DiaryController>();
     _diaryController.getDiaryList();
+    ReceiveSharingIntent.getTextStream().listen((event) {
+      print(event);
+      DiaryCompanion currentDiary = DiaryCompanion(
+          id: drift.Value.absent(),
+          title: drift.Value<String>('uncategorised Data'),
+          diary: drift.Value<String>(event),
+          userId: drift.Value<int>(1),
+          date: drift.Value<DateTime>(DateTime.now()));
+          Get.find<DiaryController>().saveDiary(currentDiary);
+    });
   }
 
   @override

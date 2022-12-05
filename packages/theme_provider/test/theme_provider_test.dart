@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_deriv_theme/src/colors.dart';
-import 'package:flutter_deriv_theme/text_styles.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:theme_provider/src/colors.dart';
+import 'package:theme_provider/text_styles.dart';
 
 import 'theme_provider.dart';
 
