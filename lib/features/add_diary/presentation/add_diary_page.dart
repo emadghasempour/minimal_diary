@@ -62,6 +62,13 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                 Navigator.pop(context);
               },
               icon: Icon(Icons.done),
+            ),
+            IconButton(
+              onPressed: () async {
+                await _saveDiary();
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.link),
             )
           ],
         ),
