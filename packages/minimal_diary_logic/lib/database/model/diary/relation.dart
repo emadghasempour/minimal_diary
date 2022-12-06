@@ -4,10 +4,9 @@ import 'package:drift/drift.dart';
 import 'package:json_annotation/json_annotation.dart' as j;
 part 'relation.g.dart';
 
-
 @j.JsonSerializable()
 class Relation {
- final List<int> relations;
+  final List<int> relations;
 
   Relation(this.relations);
   factory Relation.fromJson(Map<String, dynamic> json) =>
@@ -21,11 +20,17 @@ class RelationConverter extends TypeConverter<Relation, String> {
 
   @override
   Relation? mapToDart(String? fromDb) {
-    return Relation.fromJson(json.decode(fromDb!) as Map<String,dynamic>);
+    if (fromDb != null) {
+      return Relation.fromJson(json.decode(fromDb) as Map<String, dynamic>);
+    }
+    return null;
   }
-  
+
   @override
   String? mapToSql(Relation? value) {
-    return json.encode(value!.toJson());
+    if (value != null) {
+      return json.encode(value!.toJson());
+    }
+    return null;
   }
 }

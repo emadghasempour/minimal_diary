@@ -21,7 +21,7 @@ class Diary extends Table {
   DateTimeColumn get date => dateTime()();
 
   TextColumn get relation =>
-      text().map(const RelationConverter()).nullable()();
+      text().map(const RelationConverter()).withDefault(Constant<String>(Relation([]).toJson().toString()))();
 }
 
 @DriftDatabase(tables: [Diary])

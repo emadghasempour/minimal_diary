@@ -25,18 +25,9 @@ class _DiaryListPageState extends State<DiaryListPage> {
   @override
   void initState() {
     super.initState();
+    _initializeListeners();
     _diaryController = Get.find<DiaryController>();
     _diaryController.getDiaryList();
-    ReceiveSharingIntent.getTextStream().listen((event) {
-      print(event);
-      DiaryCompanion currentDiary = DiaryCompanion(
-          id: drift.Value.absent(),
-          title: drift.Value<String>('uncategorised Data'),
-          diary: drift.Value<String>(event),
-          userId: drift.Value<int>(1),
-          date: drift.Value<DateTime>(DateTime.now()));
-          Get.find<DiaryController>().saveDiary(currentDiary);
-    });
   }
 
   @override
@@ -46,8 +37,9 @@ class _DiaryListPageState extends State<DiaryListPage> {
         iconTheme: IconThemeData(color: Colors.grey),
         backgroundColor: Colors.white,
         elevation: 0,
-        title: GestureDetector(child: Text(context.localization.labelMinimalDiary),
-          onTap: ()=> _showAbout(context),
+        title: GestureDetector(
+          child: Text(context.localization.labelMinimalDiary),
+          onTap: () => _showAbout(context),
         ),
         titleTextStyle: TextStyles.lightTitle.copyWith(color: Colors.grey),
         centerTitle: true,
@@ -138,24 +130,55 @@ class _DiaryListPageState extends State<DiaryListPage> {
     return await _diaryController.removeDiary(diaryData);
   }
 
-  Future<void> _showAbout(BuildContext context) async{
+  Future<void> _showAbout(BuildContext context) async {
     PackageInfo packageInfo = await PackageInfo.fromPlatform();
-    await showDialog<String>(context: context, builder: (BuildContext context) {
-      return AlertDialog(
-        content: ListView(
-          shrinkWrap: true,
+    await showDialog<String>(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            content: ListView(
+              shrinkWrap: true,
+              children: [
+                Center(
+                    child: Text(
+                  context.localization.labelMinimalDiary,
+                  style: TextStyles.lightTitle,
+                )),
+                Center(
+                    child: Text(
+                  '${context.localization.labelVersion}: ${packageInfo.version}',
+                  style: TextStyles.caption,
+                )),
+              ],
+            ),
+            actions: [
+              TextButton(
+                  child: Text(context.localization.labelClose),
+                  onPressed: () => Navigator.of(context).pop()),
+            ],
+          );
+        });
+  }
 
-          children: [
-            Center(child: Text(context.localization.labelMinimalDiary,style: TextStyles.lightTitle,)),
-            Center(child: Text('${context.localization.labelVersion}: ${packageInfo.version}',style: TextStyles.caption,)),
-          ],
-        ),
-        actions: [
-          TextButton(
-              child: Text(context.localization.labelClose),
-              onPressed: () => Navigator.of(context).pop()),
-        ],
-      );
+  void _initializeListeners() {
+    ReceiveSharingIntent.getInitialText()
+        .then((value) => storeSharedTextContent(value));
+
+    ReceiveSharingIntent.getTextStream().listen((event) {
+      storeSharedTextContent(event);
     });
+  }
+
+  void storeSharedTextContent(String? event) {
+    print(event);
+    if (event != null) {
+      DiaryCompanion currentDiary = DiaryCompanion(
+          id: drift.Value.absent(),
+          title: drift.Value<String>(event),
+          diary: drift.Value<String>(event),
+          userId: drift.Value<int>(1),
+          date: drift.Value<DateTime>(DateTime.now()));
+      Get.find<DiaryController>().saveDiary(currentDiary);
+    }
   }
 }

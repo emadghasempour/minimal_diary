@@ -6,7 +6,7 @@ import 'package:theme_provider/theme_provider.dart';
 class DiaryListItem extends StatelessWidget {
   const DiaryListItem({
     required this.title,
-    required this.date,
+    this.date,
     this.onTap,
     this.onLongPress,
     Key? key,
@@ -14,7 +14,7 @@ class DiaryListItem extends StatelessWidget {
 
   final String title;
 
-  final DateTime date;
+  final DateTime? date;
 
   final void Function()? onTap;
   final void Function()? onLongPress;
@@ -32,10 +32,11 @@ class DiaryListItem extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(title, style: TextStyles.body1.copyWith(fontSize: 17)),
-              Text(
-                getFormattedDate(date),
-                style: TextStyles.overline.copyWith(color: Colors.grey),
-              ),
+              if (date != null)
+                Text(
+                  getFormattedDate(date!),
+                  style: TextStyles.overline.copyWith(color: Colors.grey),
+                ),
             ],
           ),
         ),
