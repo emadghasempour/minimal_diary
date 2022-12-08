@@ -172,13 +172,16 @@ class _DiaryListPageState extends State<DiaryListPage> {
   void storeSharedTextContent(String? event) {
     print(event);
     if (event != null) {
-      DiaryCompanion currentDiary = DiaryCompanion(
+      /* DiaryCompanion currentDiary = DiaryCompanion(
           id: drift.Value.absent(),
           title: drift.Value<String>(event),
           diary: drift.Value<String>(event),
           userId: drift.Value<int>(1),
           date: drift.Value<DateTime>(DateTime.now()));
-      Get.find<DiaryController>().saveDiary(currentDiary);
+      Get.find<DiaryController>().saveDiary(currentDiary); */
+      Get.toNamed(AddDiaryPage.routeName,arguments: {
+        'content' : event,
+      });
     }
   }
 }

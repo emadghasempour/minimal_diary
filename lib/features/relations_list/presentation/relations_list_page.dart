@@ -5,6 +5,7 @@ import 'package:minimal_diary/features/add_diary/presentation/add_diary_page.dar
 import 'package:minimal_diary/features/create_relation/presentation/create_relation_page.dart';
 import 'package:minimal_diary/features/diary_list/presentation/widgets/diary_list_item.dart';
 import 'package:minimal_diary_logic/database/model/diary/diary_model.dart';
+import 'package:theme_provider/theme_provider.dart';
 
 class RelationsList extends StatefulWidget {
   const RelationsList({required this.diary, Key? key}) : super(key: key);
@@ -39,7 +40,8 @@ class _RelationsListState extends State<RelationsList> {
           icon: Icon(Icons.arrow_back_ios_sharp),
         ),
       ),
-      body: _diary.relation != null
+      body: Padding(padding: EdgeInsets.symmetric(horizontal: ThemeProvider.margin16),
+        child:  _diary.relation != null
           ? FutureBuilder(
               future:
                   _diaryController.getDiaryListById(_diary.relation!.relations),
@@ -63,6 +65,7 @@ class _RelationsListState extends State<RelationsList> {
               },
             )
           : SizedBox.shrink(),
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Get.to(

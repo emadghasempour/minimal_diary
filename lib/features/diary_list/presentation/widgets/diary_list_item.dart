@@ -21,23 +21,38 @@ class DiaryListItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.all(Radius.circular(ThemeProvider.margin04)),
-      onLongPress: onLongPress,
-      child: Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: ThemeProvider.margin08),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(title, style: TextStyles.body1.copyWith(fontSize: 17)),
-              if (date != null)
-                Text(
-                  getFormattedDate(date!),
-                  style: TextStyles.overline.copyWith(color: Colors.grey),
-                ),
-            ],
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: new BorderSide(color: Colors.black26, width: 1.0),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.all(Radius.circular(ThemeProvider.margin04)),
+        onLongPress: onLongPress,
+        child: Center(
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+                horizontal: ThemeProvider.margin08,
+                vertical: ThemeProvider.margin16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(flex: 2, child: Text(title, style: TextStyles.body1.copyWith(fontSize: 17))),
+                if (date != null)
+                  Expanded(
+                    flex: 1,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        getFormattedDate(date!),
+                        style: TextStyles.overline.copyWith(color: Colors.grey),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
       ),

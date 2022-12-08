@@ -1,9 +1,13 @@
 import 'package:drift/drift.dart' as drift;
+import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:minimal_diary/core/diary/controller/diary_controller.dart';
 import 'package:minimal_diary/core/extensions/index.dart';
 import 'package:minimal_diary/core/helpers/index.dart';
+import 'package:minimal_diary/features/add_diary/controllers/diary_details_controller.dart';
+import 'package:minimal_diary/features/create_relation/presentation/create_relation_page.dart';
+import 'package:minimal_diary/features/diary_list/presentation/widgets/diary_list_item.dart';
 import 'package:minimal_diary/features/relations_list/presentation/relations_list_page.dart';
 import 'package:minimal_diary_logic/database/model/diary/diary_model.dart';
 import 'package:theme_provider/text_styles.dart';
@@ -24,6 +28,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
   late DiaryController _diaryController;
   late TextEditingController _titleController;
   late TextEditingController _textController;
+  late DiaryDetailsController _diaryDetailsController;
   DiaryData? _diaryData;
 
   @override
@@ -32,8 +37,8 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
     _titleController = TextEditingController();
     _textController = TextEditingController();
 
-    _diaryController = Get.find<DiaryController>();
     _diaryData = widget.diary;
+    _diaryController = Get.find<DiaryController>();
 
     _initializeDiaryData(_diaryData);
   }
@@ -46,38 +51,12 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
   }
 
   Widget _buildAddDiaryPage() => Scaffold(
-        appBar: AppBar(
-          iconTheme: IconThemeData(color: Colors.grey),
-          backgroundColor: Colors.white,
-          elevation: 0,
-          leading: IconButton(
-            onPressed: () async {
-              Navigator.pop(context);
-            },
-            icon: Icon(Icons.arrow_back_ios_sharp),
-          ),
-          actions: [
-            IconButton(
-              onPressed: () async {
-                await _saveDiary();
-                Navigator.pop(context);
-              },
-              icon: Icon(Icons.done),
-            ),
-            if (widget.diary != null)
-              IconButton(
-                onPressed: () async {
-                  Get.to(RelationsList(diary: widget.diary!));
-                },
-                icon: Icon(Icons.link),
-              )
-          ],
-        ),
+        appBar: _buildAppBar(),
         body: Padding(
           padding:
               const EdgeInsets.symmetric(horizontal: ThemeProvider.margin16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
+            //crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               TextField(
                 controller: _titleController,
@@ -87,8 +66,9 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                   hintText: context.localization.hintTitle,
                 ),
               ),
-              if (isDateVisible())
+              if (isEditMode)
                 Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       getFormattedDate(_diaryData!.date),
@@ -97,23 +77,31 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                     SizedBox(height: ThemeProvider.margin08)
                   ],
                 ),
-              Expanded(
-                child: TextField(
-                  controller: _textController,
-                  style: TextStyles.body1Light.copyWith(fontSize: 17),
-                  enabled: true,
-                  expands: true,
-                  maxLines: null,
-                  autocorrect: false,
-                  decoration: InputDecoration(
-                    border: InputBorder.none,
-                    hintText: context.localization.hintHowWasYourDay,
-                  ),
+              TextField(
+                controller: _textController,
+                style: TextStyles.body1Light.copyWith(fontSize: 17),
+                enabled: true,
+                maxLines: null,
+                autocorrect: false,
+                decoration: InputDecoration(
+                  border: InputBorder.none,
+                  hintText: 'Note',
                 ),
               ),
+              if (isEditMode) _buildRelationsWidget(),
             ],
           ),
         ),
+      );
+
+  Widget _buildRelationsWidget() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Divider(),
+          SizedBox(height: ThemeProvider.margin08),
+          Text('Related Cards'),
+          _buildRelationsList(),
+        ],
       );
 
   Future<void> _saveDiary() async {
@@ -134,10 +122,144 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
 
   void _initializeDiaryData(DiaryData? diaryData) {
     if (_diaryData != null) {
+      _diaryDetailsController = Get.put(DiaryDetailsController(_diaryData!),
+          tag: _diaryData!.id.toString());
       _titleController.text = _diaryData?.title ?? '';
       _textController.text = _diaryData?.diary ?? '';
+    } else if (Get.arguments != null) {
+      _textController.text = Get.arguments['content'] ?? '';
     }
   }
 
-  bool isDateVisible() => _diaryData != null;
+  bool get isEditMode => _diaryData != null;
+
+  _buildAppBar() => AppBar(
+        iconTheme: IconThemeData(color: Colors.grey),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          onPressed: () async {
+            Navigator.pop(context);
+          },
+          icon: Icon(Icons.arrow_back_ios_sharp),
+        ),
+        actions: [
+          IconButton(
+            onPressed: () async {
+              await _saveDiary();
+              Navigator.pop(context);
+            },
+            icon: Icon(Icons.done),
+          ),
+          IconButton(
+            onPressed: () async {
+              _showSnackBar('Will add a reminder for this card');
+            },
+            icon: Icon(Icons.add_alert_outlined),
+          ),
+          if (widget.diary != null)
+            IconButton(
+              onPressed: () async {
+                _showCreateRelationBottomSheet(context);
+              },
+              icon: Icon(Icons.add_link),
+            )
+        ],
+      );
+
+  Widget _buildRelationsList() => Obx(
+        () => ListView.builder(
+          shrinkWrap: true,
+          itemCount: _diaryDetailsController.relations.length,
+          itemBuilder: (BuildContext context, int index) => DiaryListItem(
+            title: _diaryDetailsController.relations[index].title ?? '',
+            date: _diaryDetailsController.relations[index].date,
+            onTap: () {
+              Get.to(
+                AddDiaryPage(
+                  diary: _diaryDetailsController.relations[index],
+                ),
+                preventDuplicates: false,
+              );
+            },
+            onLongPress: () => _showRemoveRelationBottomSheet(
+                context, _diaryDetailsController.relations[index]),
+          ),
+        ),
+      );
+
+  void _showRemoveRelationBottomSheet(BuildContext context, DiaryData other) {
+    showModalBottomSheet<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return Container(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                ListTile(
+                  title: Text('Unrelate This Card'),
+                  onTap: () {
+                    _diaryDetailsController.RemoveRelation(other);
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+  void _showCreateRelationBottomSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+        context: context,
+
+        builder: (BuildContext context) {
+          return Container(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                ListTile(
+                  title: Text('Another Card'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Get.to(CreateRelationPage(diary: widget.diary!));
+                  },
+                ),
+                ListTile(
+                  title: Text('Image (coming soon)'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showSnackBar('Will Relate an Image to this card');
+                  },
+                ),
+
+                ListTile(
+                  title: Text('Recording (coming soon)'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showSnackBar('Will Relate a Recording to this card');
+                  },
+                ),
+
+                ListTile(
+                  title: Text('File (coming soon)'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showSnackBar('Will Relate a File to this card');
+                  },
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+  void _showSnackBar(String content) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(content),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
 }
