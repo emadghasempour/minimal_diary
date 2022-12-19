@@ -30,10 +30,10 @@ class MyApp extends StatelessWidget {
           page: () => const AddDiaryPage(),
         ),
       ],
-      title: 'Flutter Demo',
+      title: 'Footprint',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          primarySwatch: Colors.lime, scaffoldBackgroundColor: Colors.white),
+          primarySwatch: Colors.deepOrange, scaffoldBackgroundColor: Colors.white),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         S.delegate,
         GlobalMaterialLocalizations.delegate,

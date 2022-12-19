@@ -1,9 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.minimal_diary">
    <application
-        android:label="minimal_diary"
+        android:label="Footprint"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/footprint_icon">
         <activity
             android:name=".MainActivity"
             android:exported="true"

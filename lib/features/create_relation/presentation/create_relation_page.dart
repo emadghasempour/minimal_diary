@@ -56,7 +56,8 @@ class _CreateRelationPageState extends State<CreateRelationPage> {
             itemCount: _diaryController.diaries.length,
             shrinkWrap: true,
             itemBuilder: (BuildContext context, int index) => DiaryListItem(
-              title: _diaryController.diaries[index].title ?? '',
+              title: _diaryController.diaries[index].title,
+              content: _diaryController.diaries[index].diary,
               date: _diaryController.diaries[index].date,
               onTap: () async{
                 /* late DiaryData source;

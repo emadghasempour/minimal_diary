@@ -21,7 +21,8 @@ class DiaryList extends StatelessWidget {
       child: ListView.builder(
             itemCount: items.length,
             itemBuilder: (BuildContext context, int index) => DiaryListItem(
-              title: items[index].title ?? '',
+              title: items[index].title,
+              content: items[index].diary,
               date: items[index].date,
               onTap: (){
                 onTap?.call(items[index]);

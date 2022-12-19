@@ -38,8 +38,8 @@ class _DiaryListPageState extends State<DiaryListPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         title: GestureDetector(
-          child: Text(context.localization.labelMinimalDiary),
-          onTap: () => _showAbout(context),
+          child: Text('Footprint'),
+          onTap: () async => await _showAbout(context),
         ),
         titleTextStyle: TextStyles.lightTitle.copyWith(color: Colors.grey),
         centerTitle: true,
@@ -68,7 +68,8 @@ class _DiaryListPageState extends State<DiaryListPage> {
           () => ListView.builder(
             itemCount: _diaryController.diaries.length,
             itemBuilder: (BuildContext context, int index) => DiaryListItem(
-              title: _diaryController.diaries[index].title ?? '',
+              title: _diaryController.diaries[index].title,
+              content: _diaryController.diaries[index].diary,
               date: _diaryController.diaries[index].date,
               onTap: () {
                 Get.to(
@@ -136,20 +137,29 @@ class _DiaryListPageState extends State<DiaryListPage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            content: ListView(
-              shrinkWrap: true,
-              children: [
-                Center(
-                    child: Text(
-                  context.localization.labelMinimalDiary,
-                  style: TextStyles.lightTitle,
-                )),
-                Center(
-                    child: Text(
-                  '${context.localization.labelVersion}: ${packageInfo.version}',
-                  style: TextStyles.caption,
-                )),
-              ],
+            content: SizedBox(
+              width: double.maxFinite,
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  Center(
+                      child: Text(
+                    'Footprint',
+                    style: TextStyles.lightTitle,
+                  )),
+                  Center(
+                      child: Text(
+                    '${context.localization.labelVersion}: ${packageInfo.version}',
+                    style: TextStyles.caption,
+                  )),
+                  SizedBox(height: ThemeProvider.margin16),
+                  Center(
+                      child: Text(
+                    'Thank you for testing ❤✌',
+                    style: TextStyles.caption,
+                  )),
+                ],
+              ),
             ),
             actions: [
               TextButton(

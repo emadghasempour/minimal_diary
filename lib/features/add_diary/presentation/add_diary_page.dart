@@ -50,49 +50,55 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
     );
   }
 
-  Widget _buildAddDiaryPage() => Scaffold(
-        appBar: _buildAppBar(),
-        body: Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: ThemeProvider.margin16),
-          child: ListView(
-            //crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              TextField(
-                controller: _titleController,
-                style: TextStyles.lightTitle.copyWith(fontSize: 22),
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: context.localization.hintTitle,
+  Widget _buildAddDiaryPage() => WillPopScope(
+    onWillPop: (() async{
+      await _saveDiary();
+      return true;
+    }),
+    child: Scaffold(
+          appBar: _buildAppBar(),
+          body: Padding(
+            padding:
+                const EdgeInsets.symmetric(horizontal: ThemeProvider.margin16),
+            child: ListView(
+              //crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                TextField(
+                  controller: _titleController,
+                  style: TextStyles.lightTitle.copyWith(fontSize: 22),
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: context.localization.hintTitle,
+                  ),
                 ),
-              ),
-              if (isEditMode)
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      getFormattedDate(_diaryData!.date),
-                      style: TextStyles.overline.copyWith(color: Colors.grey),
-                    ),
-                    SizedBox(height: ThemeProvider.margin08)
-                  ],
+                if (isEditMode)
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        getFormattedDate(_diaryData!.date),
+                        style: TextStyles.overline.copyWith(color: Colors.grey),
+                      ),
+                      SizedBox(height: ThemeProvider.margin08)
+                    ],
+                  ),
+                TextField(
+                  controller: _textController,
+                  style: TextStyles.body1Light.copyWith(fontSize: 17),
+                  enabled: true,
+                  maxLines: null,
+                  autocorrect: false,
+                  decoration: InputDecoration(
+                    border: InputBorder.none,
+                    hintText: 'Note',
+                  ),
                 ),
-              TextField(
-                controller: _textController,
-                style: TextStyles.body1Light.copyWith(fontSize: 17),
-                enabled: true,
-                maxLines: null,
-                autocorrect: false,
-                decoration: InputDecoration(
-                  border: InputBorder.none,
-                  hintText: 'Note',
-                ),
-              ),
-              if (isEditMode) _buildRelationsWidget(),
-            ],
+                if (isEditMode) _buildRelationsWidget(),
+              ],
+            ),
           ),
         ),
-      );
+  );
 
   Widget _buildRelationsWidget() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -105,6 +111,9 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
       );
 
   Future<void> _saveDiary() async {
+    if(!_titleController.value.text.isNotEmpty && !_textController.value.text.isNotEmpty){
+      return;
+    }
     DiaryCompanion currentDiary = DiaryCompanion(
       id: _diaryData != null
           ? drift.Value<int>(_diaryData!.id)
@@ -139,18 +148,26 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
         elevation: 0,
         leading: IconButton(
           onPressed: () async {
+            await _saveDiary();
             Navigator.pop(context);
           },
           icon: Icon(Icons.arrow_back_ios_sharp),
         ),
         actions: [
-          IconButton(
+          /* IconButton(
             onPressed: () async {
               await _saveDiary();
               Navigator.pop(context);
             },
             icon: Icon(Icons.done),
-          ),
+          ), */
+          if (widget.diary != null)
+            IconButton(
+              onPressed: () async {
+                _showShareBottomSheet(context);
+              },
+              icon: Icon(Icons.share_outlined),
+            ),
           IconButton(
             onPressed: () async {
               _showSnackBar('Will add a reminder for this card');
@@ -163,16 +180,20 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                 _showCreateRelationBottomSheet(context);
               },
               icon: Icon(Icons.add_link),
-            )
+            ),
+
+            
         ],
       );
 
   Widget _buildRelationsList() => Obx(
         () => ListView.builder(
           shrinkWrap: true,
+          physics: NeverScrollableScrollPhysics(),
           itemCount: _diaryDetailsController.relations.length,
           itemBuilder: (BuildContext context, int index) => DiaryListItem(
-            title: _diaryDetailsController.relations[index].title ?? '',
+            title: _diaryDetailsController.relations[index].title,
+            content: _diaryDetailsController.relations[index].diary,
             date: _diaryDetailsController.relations[index].date,
             onTap: () {
               Get.to(
@@ -226,7 +247,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                   },
                 ),
                 ListTile(
-                  title: Text('Image (coming soon)'),
+                  title: Text('Image (Soon)'),
                   onTap: () {
                     Navigator.pop(context);
                     _showSnackBar('Will Relate an Image to this card');
@@ -234,7 +255,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                 ),
 
                 ListTile(
-                  title: Text('Recording (coming soon)'),
+                  title: Text('Recording (Soon)'),
                   onTap: () {
                     Navigator.pop(context);
                     _showSnackBar('Will Relate a Recording to this card');
@@ -242,10 +263,40 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                 ),
 
                 ListTile(
-                  title: Text('File (coming soon)'),
+                  title: Text('File (Soon)'),
                   onTap: () {
                     Navigator.pop(context);
                     _showSnackBar('Will Relate a File to this card');
+                  },
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
+
+void _showShareBottomSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+        context: context,
+
+        builder: (BuildContext context) {
+          return Container(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                ListTile(
+                  title: Text('Share With QR Code (Soon)'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showSnackBar('Will Share With QR Code');
+                  },
+                ),
+                ListTile(
+                  title: Text('Share As Image (Soon)'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _showSnackBar('Will Share As Image To Export');
                   },
                 ),
               ],

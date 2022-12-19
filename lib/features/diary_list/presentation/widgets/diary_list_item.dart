@@ -5,14 +5,16 @@ import 'package:theme_provider/theme_provider.dart';
 
 class DiaryListItem extends StatelessWidget {
   const DiaryListItem({
-    required this.title,
+    this.title,
+    this.content,
     this.date,
     this.onTap,
     this.onLongPress,
     Key? key,
   }) : super(key: key);
 
-  final String title;
+  final String? title;
+  final String? content;
 
   final DateTime? date;
 
@@ -39,7 +41,24 @@ class DiaryListItem extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(flex: 2, child: Text(title, style: TextStyles.body1.copyWith(fontSize: 17))),
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (hasTitle)
+                        Text(title!,
+                            style: TextStyles.body1.copyWith(fontSize: 17)),
+                      if (hasContent)
+                        SizedBox(height: ThemeProvider.margin04),
+                      if (hasContent)
+                        Text(content!,
+                            style: TextStyles.body1Light,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis),
+                    ],
+                  ),
+                ),
                 if (date != null)
                   Expanded(
                     flex: 1,
@@ -58,4 +77,7 @@ class DiaryListItem extends StatelessWidget {
       ),
     );
   }
+
+  bool get hasContent => content!=null && content != '';
+  bool get hasTitle => title!=null && title != '';
 }
