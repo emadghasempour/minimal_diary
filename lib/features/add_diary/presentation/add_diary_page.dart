@@ -1,17 +1,21 @@
+import 'package:detectable_text_field/detector/sample_regular_expressions.dart';
+import 'package:detectable_text_field/functions.dart';
+import 'package:detectable_text_field/widgets/detectable_text_field.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:expandable/expandable.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_connect/http/src/utils/utils.dart';
 import 'package:minimal_diary/core/diary/controller/diary_controller.dart';
 import 'package:minimal_diary/core/extensions/index.dart';
 import 'package:minimal_diary/core/helpers/index.dart';
 import 'package:minimal_diary/features/add_diary/controllers/diary_details_controller.dart';
 import 'package:minimal_diary/features/create_relation/presentation/create_relation_page.dart';
 import 'package:minimal_diary/features/diary_list/presentation/widgets/diary_list_item.dart';
-import 'package:minimal_diary/features/relations_list/presentation/relations_list_page.dart';
 import 'package:minimal_diary_logic/database/model/diary/diary_model.dart';
 import 'package:theme_provider/text_styles.dart';
 import 'package:theme_provider/theme_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class AddDiaryPage extends StatefulWidget {
   static const String routeName = '/addDiary';
@@ -51,11 +55,11 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
   }
 
   Widget _buildAddDiaryPage() => WillPopScope(
-    onWillPop: (() async{
-      await _saveDiary();
-      return true;
-    }),
-    child: Scaffold(
+        onWillPop: (() async {
+          await _saveDiary();
+          return true;
+        }),
+        child: Scaffold(
           appBar: _buildAppBar(),
           body: Padding(
             padding:
@@ -82,9 +86,9 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                       SizedBox(height: ThemeProvider.margin08)
                     ],
                   ),
-                TextField(
+                DetectableTextField(
                   controller: _textController,
-                  style: TextStyles.body1Light.copyWith(fontSize: 17),
+                  basicStyle: TextStyles.body1Light.copyWith(fontSize: 17),
                   enabled: true,
                   maxLines: null,
                   autocorrect: false,
@@ -92,13 +96,34 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                     border: InputBorder.none,
                     hintText: 'Note',
                   ),
+                  detectionRegExp: detectionRegExp(
+                      url: true, atSign: false, hashtag: false)!,
+                  onTap: () {
+                    /* List<String> urls = extractDetections(_textController.text, detectionRegExp(atSign: false,hashtag: false)!);
+                    if(urls.isNotEmpty){
+                      TextSpan span =  _textController.buildTextSpan(context: context, withComposing: true);
+                      print('hello');
+                      //launchUrlString(urls.first,mode: LaunchMode.externalApplication);
+                    } */
+                    int selectionIndex = _textController.selection.baseOffset;
+                    String txt = _textController.text;
+                    List<String> urls = extractDetections(_textController.text,
+                        detectionRegExp(atSign: false, hashtag: false)!);
+                    urls.forEach((element) {
+                      int startIndex = txt.indexOf(element);
+                      if (selectionIndex > startIndex &&
+                          selectionIndex < (startIndex + element.length - 1)) {
+                        _showUrlsBottomSheet(context, element);
+                      }
+                    });
+                  },
                 ),
                 if (isEditMode) _buildRelationsWidget(),
               ],
             ),
           ),
         ),
-  );
+      );
 
   Widget _buildRelationsWidget() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -111,7 +136,8 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
       );
 
   Future<void> _saveDiary() async {
-    if(!_titleController.value.text.isNotEmpty && !_textController.value.text.isNotEmpty){
+    if (!_titleController.value.text.isNotEmpty &&
+        !_textController.value.text.isNotEmpty) {
       return;
     }
     DiaryCompanion currentDiary = DiaryCompanion(
@@ -181,8 +207,6 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
               },
               icon: Icon(Icons.add_link),
             ),
-
-            
         ],
       );
 
@@ -233,7 +257,6 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
   void _showCreateRelationBottomSheet(BuildContext context) {
     showModalBottomSheet<void>(
         context: context,
-
         builder: (BuildContext context) {
           return Container(
             child: ListView(
@@ -253,7 +276,6 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                     _showSnackBar('Will Relate an Image to this card');
                   },
                 ),
-
                 ListTile(
                   title: Text('Recording (Soon)'),
                   onTap: () {
@@ -261,7 +283,6 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                     _showSnackBar('Will Relate a Recording to this card');
                   },
                 ),
-
                 ListTile(
                   title: Text('File (Soon)'),
                   onTap: () {
@@ -275,11 +296,9 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
         });
   }
 
-
-void _showShareBottomSheet(BuildContext context) {
+  void _showShareBottomSheet(BuildContext context) {
     showModalBottomSheet<void>(
         context: context,
-
         builder: (BuildContext context) {
           return Container(
             child: ListView(
@@ -305,6 +324,61 @@ void _showShareBottomSheet(BuildContext context) {
         });
   }
 
+  void _showUrlsDialog(BuildContext context,String url){
+    showDialog(context: context, builder: (context){
+      return Dialog(
+        child: Container(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                ListTile(
+                  title: Text('Open URL'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    launchUrlString(url,mode: LaunchMode.externalApplication);
+                  },
+                ),
+                ListTile(
+                  title: Text('Edit'),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          ),
+      );
+    });
+  }
+
+  void _showUrlsBottomSheet(BuildContext context,String url) {
+    
+    showModalBottomSheet<void>(
+        context: context,
+        builder: (BuildContext context) {
+          return Container(
+            child: ListView(
+              shrinkWrap: true,
+              children: [
+                ListTile(
+                  title: Text('Open URL'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    launchUrlString(url,mode: LaunchMode.externalApplication);
+                  },
+                ),
+                ListTile(
+                  title: Text('Edit'),
+                  onTap: () {
+                    Navigator.pop(context);
+                  },
+                ),
+              ],
+            ),
+          );
+        });
+  }
+
   void _showSnackBar(String content) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -312,5 +386,9 @@ void _showShareBottomSheet(BuildContext context) {
         duration: Duration(seconds: 2),
       ),
     );
+  }
+
+  void launchProject(){
+    
   }
 }
