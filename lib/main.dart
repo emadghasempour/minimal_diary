@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:minimal_diary/core/diary/controller/diary_controller.dart';
 import 'package:minimal_diary/features/add_diary/presentation/add_diary_page.dart';
 import 'package:minimal_diary/features/diary_list/presentation/diary_list_page.dart';
+import 'package:minimal_diary/features/search_page/search_page.dart';
 import 'package:minimal_diary/generated/l10n.dart';
 import 'package:minimal_diary_logic/database/model/diary/diary_model.dart';
 import 'package:minimal_diary_logic/diary/datasource/diary_db_datasource.dart';
@@ -41,7 +42,7 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: S.delegate.supportedLocales,
-      home: DiaryListPage(),
+      home: SearchPage(),
     );
   }
 }

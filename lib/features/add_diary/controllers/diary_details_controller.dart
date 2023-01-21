@@ -11,6 +11,7 @@ class DiaryDetailsController extends GetxController with StateMixin<DiaryData> {
   RxList<DiaryData> relations = <DiaryData>[].obs;
 
   late DiaryController _diaryController;
+  
   @override
   void onInit() async {
     super.onInit();

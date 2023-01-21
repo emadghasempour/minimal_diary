@@ -48,7 +48,6 @@ class MainSearchDelegate extends SearchDelegate {
 
   @override
   ThemeData appBarTheme(BuildContext context) {
-    // TODO: implement appBarTheme
     return super.appBarTheme(context).copyWith(
       appBarTheme: super.appBarTheme(context).appBarTheme.copyWith(
         elevation: 0.0,
