@@ -19,9 +19,9 @@ class DiaryService extends BaseDiaryService {
   }
 
   @override
-  Future<void> saveDiary(DiaryCompanion diaryCompanion) async {
+  Future<int> saveDiary(DiaryCompanion diaryCompanion) async {
     try {
-      await diaryDatasource.storeDiary(diaryCompanion);
+      return await diaryDatasource.storeDiary(diaryCompanion);
     } on Exception {
       rethrow;
     }

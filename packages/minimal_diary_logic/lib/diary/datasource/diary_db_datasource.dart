@@ -8,8 +8,8 @@ class DiaryDbDataSource extends BaseDiaryDatasource {
       : MyDatabase.instance.getDiaryListById(ids);
 
   @override
-  Future<void> storeDiary(DiaryCompanion diaryCompanion) async {
-    await MyDatabase.instance.insertDiary(diaryCompanion);
+  Future<int> storeDiary(DiaryCompanion diaryCompanion) async {
+    return await MyDatabase.instance.insertDiary(diaryCompanion);
   }
 
   @override

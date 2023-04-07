@@ -19,6 +19,14 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   TextEditingController _searchEditTextController = TextEditingController();
 
+   @override
+  void initState() {
+    super.initState();
+    
+   Get.find<DiaryController>().getDiaryList();
+    
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,8 +68,8 @@ class _SearchPageState extends State<SearchPage> {
                 children: [
                   Expanded(
                     child: TextButton(
-                        onPressed: () {
-                          showAllList();
+                        onPressed: () async{
+                          await showAllList();
                         },
                         child: Text('Show All Cards')),
                   ),
@@ -88,6 +96,6 @@ class _SearchPageState extends State<SearchPage> {
 
   Future<void> showAllList() async {
     List<DiaryData> result = await Get.find<DiaryController>().diaries;
-    Get.to(DiaryListView(items: result,));
+    Get.to(()=>DiaryListView(items: result,));
   }
 }

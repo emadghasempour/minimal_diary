@@ -32,7 +32,9 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
   late DiaryController _diaryController;
   late TextEditingController _titleController;
   late TextEditingController _textController;
-  late DiaryDetailsController _diaryDetailsController;
+  DiaryDetailsController? _diaryDetailsController;
+  late DiaryCompanion _diaryCompanion;
+
   DiaryData? _diaryData;
 
   @override
@@ -118,7 +120,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                     });
                   },
                 ),
-                if (isEditMode) _buildRelationsWidget(),
+                _buildRelationsWidget(),
               ],
             ),
           ),
@@ -138,32 +140,45 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
   Future<void> _saveDiary() async {
     if (!_titleController.value.text.isNotEmpty &&
         !_textController.value.text.isNotEmpty) {
+      _diaryController.removeDiary(_diaryData!);
       return;
     }
-    DiaryCompanion currentDiary = DiaryCompanion(
-      id: _diaryData != null
-          ? drift.Value<int>(_diaryData!.id)
-          : drift.Value.absent(),
+    _diaryCompanion.copyWith(
       title: drift.Value<String>(_titleController.value.text),
       diary: drift.Value<String>(_textController.value.text),
       userId: drift.Value<int>(1),
       date: drift.Value<DateTime>(DateTime.now()),
     );
+
     if (_diaryData != null) {
-      await _diaryController.editDiary(currentDiary);
+      await _diaryController.editDiary(_diaryData!.toCompanion(true));
     } else
-      await _diaryController.saveDiary(currentDiary);
+      await _diaryController.saveDiary(_diaryCompanion);
   }
 
-  void _initializeDiaryData(DiaryData? diaryData) {
+  Future<void> _initializeDiaryData(DiaryData? diaryData) async {
+    _diaryCompanion = DiaryCompanion(
+      id: _diaryData != null
+          ? drift.Value<int>(_diaryData!.id)
+          : drift.Value.absent(),
+      userId: drift.Value<int>(1),
+      date: drift.Value<DateTime>(DateTime.now()),
+    );
+
+    int savedId = await _diaryController.saveDiary(_diaryCompanion);
+    _diaryData = (await _diaryController.getDiaryListById([savedId])).first;
+    _diaryDetailsController = Get.put(DiaryDetailsController(_diaryData!),
+        tag: _diaryData!.id.toString());
     if (_diaryData != null) {
-      _diaryDetailsController = Get.put(DiaryDetailsController(_diaryData!),
-          tag: _diaryData!.id.toString());
       _titleController.text = _diaryData?.title ?? '';
       _textController.text = _diaryData?.diary ?? '';
-    } else if (Get.arguments != null) {
-      _textController.text = Get.arguments['content'] ?? '';
+    } else {
+      if (Get.arguments != null) {
+        _textController.text = Get.arguments['content'] ?? '';
+      }
     }
+
+    _diaryCompanion = _diaryData!.toCompanion(true);
   }
 
   bool get isEditMode => _diaryData != null;
@@ -187,51 +202,52 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
             },
             icon: Icon(Icons.done),
           ), */
-          if (widget.diary != null)
-            IconButton(
-              onPressed: () async {
-                _showShareBottomSheet(context);
-              },
-              icon: Icon(Icons.share_outlined),
-            ),
+
+          IconButton(
+            onPressed: () async {
+              _showShareBottomSheet(context);
+            },
+            icon: Icon(Icons.share_outlined),
+          ),
           IconButton(
             onPressed: () async {
               _showSnackBar('Will add a reminder for this card');
             },
             icon: Icon(Icons.add_alert_outlined),
           ),
-          if (widget.diary != null)
-            IconButton(
-              onPressed: () async {
-                _showCreateRelationBottomSheet(context);
-              },
-              icon: Icon(Icons.add_link),
-            ),
+          IconButton(
+            onPressed: () async {
+              _showCreateRelationBottomSheet(context);
+            },
+            icon: Icon(Icons.add_link),
+          ),
         ],
       );
 
-  Widget _buildRelationsList() => Obx(
-        () => ListView.builder(
-          shrinkWrap: true,
-          physics: NeverScrollableScrollPhysics(),
-          itemCount: _diaryDetailsController.relations.length,
-          itemBuilder: (BuildContext context, int index) => DiaryListItem(
-            title: _diaryDetailsController.relations[index].title,
-            content: _diaryDetailsController.relations[index].diary,
-            date: _diaryDetailsController.relations[index].date,
-            onTap: () {
-              Get.to(
-                AddDiaryPage(
-                  diary: _diaryDetailsController.relations[index],
-                ),
-                preventDuplicates: false,
-              );
-            },
-            onLongPress: () => _showRemoveRelationBottomSheet(
-                context, _diaryDetailsController.relations[index]),
+  Widget _buildRelationsList() => _diaryDetailsController == null
+      ? SizedBox.shrink()
+      : Obx(
+          () => ListView.builder(
+            shrinkWrap: true,
+            physics: NeverScrollableScrollPhysics(),
+            itemCount: _diaryDetailsController?.relations.length,
+            itemBuilder: (BuildContext context, int index) => DiaryListItem(
+              title: _diaryDetailsController!.relations[index].title,
+              content: _diaryDetailsController!.relations[index].diary,
+              date: _diaryDetailsController!.relations[index].date,
+              onTap: () {
+                Get.to(
+                  AddDiaryPage(
+                    diary: _diaryDetailsController!.relations[index],
+                  ),
+                  preventDuplicates: false,
+                );
+              },
+              onLongPress: () => _showRemoveRelationBottomSheet(
+                  context, _diaryDetailsController!.relations[index]),
+            ),
           ),
-        ),
-      );
+        );
 
   void _showRemoveRelationBottomSheet(BuildContext context, DiaryData other) {
     showModalBottomSheet<void>(
@@ -244,7 +260,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                 ListTile(
                   title: Text('Unrelate This Card'),
                   onTap: () {
-                    _diaryDetailsController.RemoveRelation(other);
+                    _diaryDetailsController!.RemoveRelation(other);
                     Navigator.pop(context);
                   },
                 ),
@@ -266,7 +282,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                   title: Text('Another Card'),
                   onTap: () {
                     Navigator.pop(context);
-                    Get.to(CreateRelationPage(diary: widget.diary!));
+                    Get.to(()=>CreateRelationPage(diary: _diaryData!));
                   },
                 ),
                 ListTile(
@@ -324,35 +340,37 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
         });
   }
 
-  void _showUrlsDialog(BuildContext context,String url){
-    showDialog(context: context, builder: (context){
-      return Dialog(
-        child: Container(
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                ListTile(
-                  title: Text('Open URL'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    launchUrlString(url,mode: LaunchMode.externalApplication);
-                  },
-                ),
-                ListTile(
-                  title: Text('Edit'),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
+  void _showUrlsDialog(BuildContext context, String url) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            child: Container(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  ListTile(
+                    title: Text('Open URL'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      launchUrlString(url,
+                          mode: LaunchMode.externalApplication);
+                    },
+                  ),
+                  ListTile(
+                    title: Text('Edit'),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-      );
-    });
+          );
+        });
   }
 
-  void _showUrlsBottomSheet(BuildContext context,String url) {
-    
+  void _showUrlsBottomSheet(BuildContext context, String url) {
     showModalBottomSheet<void>(
         context: context,
         builder: (BuildContext context) {
@@ -364,7 +382,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                   title: Text('Open URL'),
                   onTap: () {
                     Navigator.pop(context);
-                    launchUrlString(url,mode: LaunchMode.externalApplication);
+                    launchUrlString(url, mode: LaunchMode.externalApplication);
                   },
                 ),
                 ListTile(
@@ -388,7 +406,5 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
     );
   }
 
-  void launchProject(){
-    
-  }
+  void launchProject() {}
 }
