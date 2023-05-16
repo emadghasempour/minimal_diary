@@ -4,8 +4,10 @@ abstract class BaseDiaryDatasource {
   const BaseDiaryDatasource();
 
   Future<List<DiaryData>> fetchDiaryList({List<int>? ids});
+  
+  Future<DiaryData> fetchSingleDiary(int id);
 
-  Future<void> storeDiary(DiaryCompanion diaryCompanion);
+  Future<int> storeDiary(DiaryCompanion diaryCompanion);
 
   Future<bool> updateDiary(DiaryCompanion diaryCompanion);
 

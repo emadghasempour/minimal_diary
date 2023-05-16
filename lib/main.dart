@@ -14,7 +14,7 @@ import 'package:drift/drift.dart' as drift;
 
 void main() {
   _initializeControllers();
-  
+
   runApp(const MyApp());
 }
 
@@ -34,7 +34,9 @@ class MyApp extends StatelessWidget {
       title: 'Footprint',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          primarySwatch: Colors.deepOrange, scaffoldBackgroundColor: Colors.white),
+        primarySwatch: Colors.deepOrange,
+        scaffoldBackgroundColor: Colors.white,
+      ),
       localizationsDelegates: const <LocalizationsDelegate<dynamic>>[
         S.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -42,7 +44,7 @@ class MyApp extends StatelessWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: S.delegate.supportedLocales,
-      home: SearchPage(),
+      home: DiaryListPage(),
     );
   }
 }
@@ -56,5 +58,3 @@ void _initializeControllers() {
     ),
   );
 }
-
-

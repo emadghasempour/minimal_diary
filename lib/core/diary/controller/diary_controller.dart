@@ -14,9 +14,11 @@ class DiaryController extends GetxController with StateMixin<List<DiaryData>>{
     diaries.value = data;
   }
 
-  Future<void> saveDiary(DiaryCompanion diaryCompanion) async {
-    await diaryService.saveDiary(diaryCompanion);
+  Future<int> saveDiary(DiaryCompanion diaryCompanion) async {
+    int savedID = await diaryService.saveDiary(diaryCompanion);
     diaries.value = await diaryService.getDiaryList();
+
+    return savedID;
   }
 
   Future<void> editDiary(DiaryCompanion diaryCompanion) async {
@@ -35,6 +37,11 @@ class DiaryController extends GetxController with StateMixin<List<DiaryData>>{
 
   Future<List<DiaryData>> getDiaryListById(List<int> ids) async {
     return diaryService.getDiaryList(ids: ids);
+
+  }
+
+  Future<DiaryData> getDiaryById(int id) async {
+    return await diaryService.getSingleDiary(id);
 
   }
 }

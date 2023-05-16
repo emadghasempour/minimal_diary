@@ -29,7 +29,7 @@ class RelationConverter extends TypeConverter<Relation, String> {
   @override
   String? mapToSql(Relation? value) {
     if (value != null) {
-      return json.encode(value!.toJson());
+      return json.encode(value.toJson());
     }
     return null;
   }

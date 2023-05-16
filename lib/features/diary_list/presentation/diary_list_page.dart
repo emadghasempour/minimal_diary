@@ -54,8 +54,8 @@ class _DiaryListPageState extends State<DiaryListPage> {
       ),
       body: _buildDiaryList(),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Get.toNamed(AddDiaryPage.routeName);
+        onPressed: () async {
+          await _createNewCard();
         },
         child: const Icon(Icons.add),
       ),
@@ -189,9 +189,26 @@ class _DiaryListPageState extends State<DiaryListPage> {
           userId: drift.Value<int>(1),
           date: drift.Value<DateTime>(DateTime.now()));
       Get.find<DiaryController>().saveDiary(currentDiary); */
-      Get.toNamed(AddDiaryPage.routeName,arguments: {
-        'content' : event,
-      });
+      _createNewCard(content: event);
     }
+  }
+
+  Future<void> _createNewCard({String? content}) async {
+    /* if (!_titleController.value.text.isNotEmpty &&
+        !_textController.value.text.isNotEmpty) {
+      return;
+    } */
+    DiaryCompanion currentDiary = DiaryCompanion(
+      id: drift.Value.absent(),
+      title: drift.Value<String>.absent(),
+      diary: drift.Value<String>.absent(),
+      userId: drift.Value<int>(1),
+      date: drift.Value<DateTime>(DateTime.now()),
+    );
+
+    int diaryID = await _diaryController.saveDiary(currentDiary);
+    DiaryData _diaryData = await _diaryController.getDiaryById(diaryID);
+    Get.to(AddDiaryPage(diary: _diaryData),
+        arguments: content != null ? {'content': content} : null);
   }
 }

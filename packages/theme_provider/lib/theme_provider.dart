@@ -91,7 +91,7 @@ class ThemeProvider {
   static const double iconSize96 = Dimens.iconSize96;
 
   bool _isDarkTheme =
-      SchedulerBinding.instance!.window.platformBrightness == Brightness.dark;
+      SchedulerBinding.instance.window.platformBrightness == Brightness.dark;
 
   bool get isDarkTheme => _isDarkTheme;
 

@@ -5,7 +5,9 @@ abstract class BaseDiaryService {
 
   Future<List<DiaryData>> getDiaryList({List<int>? ids});
 
-  Future<void> saveDiary(DiaryCompanion diaryCompanion);
+  Future<DiaryData> getSingleDiary(int id);
+
+  Future<int> saveDiary(DiaryCompanion diaryCompanion);
 
   Future<bool> editDiary(DiaryCompanion diaryCompanion);
 

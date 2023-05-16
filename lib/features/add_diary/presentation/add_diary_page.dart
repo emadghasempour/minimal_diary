@@ -136,10 +136,10 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
       );
 
   Future<void> _saveDiary() async {
-    if (!_titleController.value.text.isNotEmpty &&
+    /* if (!_titleController.value.text.isNotEmpty &&
         !_textController.value.text.isNotEmpty) {
       return;
-    }
+    } */
     DiaryCompanion currentDiary = DiaryCompanion(
       id: _diaryData != null
           ? drift.Value<int>(_diaryData!.id)
@@ -151,18 +151,29 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
     );
     if (_diaryData != null) {
       await _diaryController.editDiary(currentDiary);
-    } else
-      await _diaryController.saveDiary(currentDiary);
+    } /* else {
+      int diaryID = await _diaryController.saveDiary(currentDiary);
+      _diaryData = await _diaryController.getDiaryById(diaryID);
+      _diaryDetailsController = Get.put(DiaryDetailsController(_diaryData!),
+          tag: _diaryData!.id.toString());
+    } */
+
+    if (!_titleController.value.text.isNotEmpty &&
+        !_textController.value.text.isNotEmpty &&
+        _diaryDetailsController.relations.isEmpty) {
+      _diaryController.removeDiary(_diaryData!);
+    }
   }
 
-  void _initializeDiaryData(DiaryData? diaryData) {
+  Future<void> _initializeDiaryData(DiaryData? diaryData) async {
     if (_diaryData != null) {
       _diaryDetailsController = Get.put(DiaryDetailsController(_diaryData!),
           tag: _diaryData!.id.toString());
       _titleController.text = _diaryData?.title ?? '';
       _textController.text = _diaryData?.diary ?? '';
-    } else if (Get.arguments != null) {
+      if (_diaryData?.diary == null && Get.arguments != null) {
       _textController.text = Get.arguments['content'] ?? '';
+    }
     }
   }
 
@@ -187,26 +198,25 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
             },
             icon: Icon(Icons.done),
           ), */
-          if (widget.diary != null)
-            IconButton(
-              onPressed: () async {
-                _showShareBottomSheet(context);
-              },
-              icon: Icon(Icons.share_outlined),
-            ),
+
+          IconButton(
+            onPressed: () async {
+              _showShareBottomSheet(context);
+            },
+            icon: Icon(Icons.share_outlined),
+          ),
           IconButton(
             onPressed: () async {
               _showSnackBar('Will add a reminder for this card');
             },
             icon: Icon(Icons.add_alert_outlined),
           ),
-          if (widget.diary != null)
-            IconButton(
-              onPressed: () async {
-                _showCreateRelationBottomSheet(context);
-              },
-              icon: Icon(Icons.add_link),
-            ),
+          IconButton(
+            onPressed: () async {
+              _showCreateRelationBottomSheet(context);
+            },
+            icon: Icon(Icons.add_link),
+          ),
         ],
       );
 
@@ -266,7 +276,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                   title: Text('Another Card'),
                   onTap: () {
                     Navigator.pop(context);
-                    Get.to(CreateRelationPage(diary: widget.diary!));
+                    Get.to(CreateRelationPage(diary: _diaryData!));
                   },
                 ),
                 ListTile(
@@ -324,35 +334,37 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
         });
   }
 
-  void _showUrlsDialog(BuildContext context,String url){
-    showDialog(context: context, builder: (context){
-      return Dialog(
-        child: Container(
-            child: ListView(
-              shrinkWrap: true,
-              children: [
-                ListTile(
-                  title: Text('Open URL'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    launchUrlString(url,mode: LaunchMode.externalApplication);
-                  },
-                ),
-                ListTile(
-                  title: Text('Edit'),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
+  void _showUrlsDialog(BuildContext context, String url) {
+    showDialog(
+        context: context,
+        builder: (context) {
+          return Dialog(
+            child: Container(
+              child: ListView(
+                shrinkWrap: true,
+                children: [
+                  ListTile(
+                    title: Text('Open URL'),
+                    onTap: () {
+                      Navigator.pop(context);
+                      launchUrlString(url,
+                          mode: LaunchMode.externalApplication);
+                    },
+                  ),
+                  ListTile(
+                    title: Text('Edit'),
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
             ),
-          ),
-      );
-    });
+          );
+        });
   }
 
-  void _showUrlsBottomSheet(BuildContext context,String url) {
-    
+  void _showUrlsBottomSheet(BuildContext context, String url) {
     showModalBottomSheet<void>(
         context: context,
         builder: (BuildContext context) {
@@ -364,7 +376,7 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
                   title: Text('Open URL'),
                   onTap: () {
                     Navigator.pop(context);
-                    launchUrlString(url,mode: LaunchMode.externalApplication);
+                    launchUrlString(url, mode: LaunchMode.externalApplication);
                   },
                 ),
                 ListTile(
@@ -388,7 +400,5 @@ class _AddDiaryPageState extends State<AddDiaryPage> {
     );
   }
 
-  void launchProject(){
-    
-  }
+  void launchProject() {}
 }
